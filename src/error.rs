@@ -1,56 +1,99 @@
 
-    use core::fmt;
+use core::fmt;
 
-    #[derive(PartialEq , Eq , Copy, Clone , Debug)]
-    pub enum ErrorCode {
-        TargetOffline,
-        InvalidProfileId,
-        ChannelIsnotCreated,
-        AccessDenied,
-        Unknown,
-    }
+#[derive(PartialEq , Eq , Copy, Clone , Debug)]
+pub enum NetworkErrorCode {
+    TargetOffline,
+    InvalidProfileId,
+    ChannelIsnotCreated,
+    AccessDenied,
+    Unknown,
+}
 
-    impl From<ErrorCode> for u8 {
-        fn from(error_code: ErrorCode) -> Self {
-            match error_code {
-                ErrorCode::TargetOffline => 0,
-                ErrorCode::InvalidProfileId => 1,
-                ErrorCode::ChannelIsnotCreated => 2,
-                ErrorCode::AccessDenied => 3,
-                ErrorCode::Unknown => 99,
-            }
+impl From<NetworkErrorCode> for u8 {
+    fn from(error_code: NetworkErrorCode) -> Self {
+        match error_code {
+            NetworkErrorCode::TargetOffline => 0,
+            NetworkErrorCode::InvalidProfileId => 1,
+            NetworkErrorCode::ChannelIsnotCreated => 2,
+            NetworkErrorCode::AccessDenied => 3,
+            NetworkErrorCode::Unknown => 99,
         }
     }
+}
 
-    impl From<u8> for ErrorCode {
-        fn from(error_code: u8) -> Self {
-            match error_code {
-                0 => ErrorCode::TargetOffline,
-                1 => ErrorCode::InvalidProfileId,
-                2 => ErrorCode::ChannelIsnotCreated,
-                3 => ErrorCode::AccessDenied,
-                _n => ErrorCode::Unknown,
-            }
+impl From<u8> for NetworkErrorCode {
+    fn from(error_code: u8) -> Self {
+        match error_code {
+            0 => NetworkErrorCode::TargetOffline,
+            1 => NetworkErrorCode::InvalidProfileId,
+            2 => NetworkErrorCode::ChannelIsnotCreated,
+            3 => NetworkErrorCode::AccessDenied,
+            _n => NetworkErrorCode::Unknown,
         }
     }
+}
 
-    impl fmt::Display for ErrorCode {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match self {
-                ErrorCode::TargetOffline => write!(f , "The target is ofline"),
-                ErrorCode::InvalidProfileId => write!(f , "Profile ID doesn't exist"),
-                ErrorCode::ChannelIsnotCreated => write!(f , "The channel is not created"),
-                ErrorCode::AccessDenied => write!(f, " You do not have access to this action"),
-                _ => write!(f , "unhandeled"),
-            }
+impl fmt::Display for NetworkErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            NetworkErrorCode::TargetOffline => write!(f , "The target is ofline"),
+            NetworkErrorCode::InvalidProfileId => write!(f , "Profile ID doesn't exist"),
+            NetworkErrorCode::ChannelIsnotCreated => write!(f , "The channel is not created"),
+            NetworkErrorCode::AccessDenied => write!(f, " You do not have access to this action"),
+            _ => write!(f , "unhandeled"),
         }
     }
+}
 
-    #[derive(Eq , PartialEq , Clone , Copy , Debug)]
-    pub struct NetworkErr(ErrorCode);
+#[derive(Eq , PartialEq , Clone , Copy , Debug)]
+pub struct NetworkError(pub NetworkErrorCode);
 
-    impl fmt::Display for NetworkErr {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f , "{}" , self.0)
-        }   
+impl fmt::Display for NetworkError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f , "{}" , self.0)
+    }   
+}
+
+#[derive(Eq , PartialEq , Clone , Debug)]
+pub enum ApplicationErrorCode {
+BYTESNOTENOUGH,
+}
+
+impl From<ApplicationErrorCode> for u8 {
+    fn from(error_code: ApplicationErrorCode) -> Self {
+        match error_code {
+            ApplicationErrorCode::BYTESNOTENOUGH => 0,
+        }
     }
+}
+
+impl From<u8> for ApplicationErrorCode {
+    fn from(error_code: u8) -> Self {
+        match error_code {
+            0 => ApplicationErrorCode::BYTESNOTENOUGH,
+            _n => unreachable!(),
+        }
+    }
+}
+
+impl fmt::Display for ApplicationErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ApplicationErrorCode::BYTESNOTENOUGH => write!(f , "bytes not enough")
+        }
+    }
+}
+
+#[derive(Eq , PartialEq , Clone , Debug)]
+pub struct ApplicationError(pub ApplicationErrorCode);
+
+pub type NeErCode = NetworkErrorCode;
+pub type ApErCode = ApplicationErrorCode;
+
+
+impl fmt::Display for ApplicationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f , "{}" , self.0)
+    }   
+}

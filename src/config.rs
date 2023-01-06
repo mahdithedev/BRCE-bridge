@@ -98,3 +98,49 @@
         }
 
     }
+
+    
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ip_cant_be_in_both_lists() {
+        
+        let mut c = Config::defualt();
+        let ip = String::from("127.0.0.1");
+
+        c.add_ip_to_whitelist(&ip).unwrap();
+
+        if let Ok(_) = c.add_ip_to_blacklist(&ip) {
+            assert!(false)
+        }
+
+    }
+
+    #[test]
+    fn blacklisted_ip_not_allowed() {
+
+        let mut c = Config::defualt();
+        let ip = String::from("127.0.0.1");
+
+        c.add_ip_to_blacklist(&ip).unwrap();
+
+        assert!(!c.allowed(&ip));
+
+    }
+
+    #[test]
+    fn ip_not_in_whitelist_not_allowed() {
+
+        let mut c = Config::defualt();
+        let ip1 = String::from("127.0.0.1");
+        let ip2 = String::from("197.8.2.3");
+
+        c.add_ip_to_whitelist(&ip1).unwrap();
+
+        assert!(!c.allowed(&ip2));
+
+    }
+
+}
