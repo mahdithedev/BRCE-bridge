@@ -9,6 +9,7 @@ use crate::error;
         LIS(String),
         INP(String),
         OUT(String),
+        ACK(),
         ERR(error::NetworkErrorCode),
         Unknown(u8),
     }
@@ -22,7 +23,8 @@ use crate::error;
                 Packet::LIS(_) => 3,
                 Packet::INP(_) => 4,
                 Packet::OUT(_) => 5,
-                Packet::ERR(_) => 6,
+                Packet::ACK() => 6,
+                Packet::ERR(_) => 7,
                 Packet::Unknown(v) => v,
             }
         }
@@ -37,7 +39,8 @@ use crate::error;
                 Packet::LIS(_) => 3,
                 Packet::INP(_) => 4,
                 Packet::OUT(_) => 5,
-                Packet::ERR(_) => 6,
+                Packet::ACK() => 6,
+                Packet::ERR(_) => 7,
                 Packet::Unknown(v) => *v,
             }
         }
@@ -48,6 +51,7 @@ use crate::error;
         pub fn serialize(&self) -> Vec<u8> {
             match self {
                 Packet::ERR(v) => vec![7u8 , 1u8 , 0u8 , (*v) as u8],
+                Packet::ACK() => vec![6u8 , 1u8 , 0u8 , 0u8],
                 Packet::Unknown(_) => {panic!("tried to serielize unknown packet")}
                 Packet::PROF(v) | Packet::INIT(v) | Packet::CONN(v) |
                 Packet::LIS(v) | Packet::INP(v) | Packet::OUT(v)  => {

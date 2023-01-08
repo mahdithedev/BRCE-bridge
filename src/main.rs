@@ -1,10 +1,9 @@
 use std::{net::{TcpListener , TcpStream}, io::{Read, Write}};
-use bridge::{config::Config, packet::Packet};
+use bridge::{packet::Packet};
 
 fn handle_client(mut stream: TcpStream) {
 
-        // std::u16::MAX as usize
-        const MAXIMUM_BUFFER_SIZE: usize = 30;
+        const MAXIMUM_BUFFER_SIZE: usize = std::u16::MAX as usize;
         let mut buffer = [0u8;MAXIMUM_BUFFER_SIZE];
         let mut cursor = -1i32;
 
@@ -40,15 +39,16 @@ fn handle_client(mut stream: TcpStream) {
 
             }
 
-            println!("{:?}" , buffer);
+            let payload = &buffer[3..payload_size+2];
 
-            let packet = 
-            Packet::deserilize_from_utf8(
-                packet_type, 
-                &buffer[2..(payload_size as usize)+2],
-                None);
+            let recieved_packet = Packet::deserilize_from_utf8(packet_type, payload, None);
 
-            println!("{:?}" , packet);
+            println!("{:?}" , recieved_packet);
+
+            let packet = match recieved_packet {
+                Packet::LIS(_) => Packet::LIS(String::from("asadpoor-123.pc\n")),
+                 _ => Packet::ACK(),
+            };
 
             if let Ok(bytes_written) = stream.write(&packet.serialize()) {
                 println!("{bytes_written} bytes written");
