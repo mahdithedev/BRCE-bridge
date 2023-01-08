@@ -1,61 +1,61 @@
 use std::{net::{TcpListener , TcpStream}, io::{Read, Write}};
-use bridge::{config::Config, packet::Packet , parser};
-
-fn read_parse_header(stream: &mut TcpStream) -> (u8 , usize) {
-
-    let mut buffer = [0u8;3];
-    let mut start = 0;
-
-    while let Ok(bytes_read) = stream.read(&mut buffer[start..]) {
-        
-        if bytes_read == 0 {
-            continue;
-        }
-
-        if bytes_read < 3 {
-            start += bytes_read;
-            continue;
-        }
-
-        let r = parser::parse_header(&buffer[0..]).unwrap();
-        return (r.0 , r.1 as usize); 
-    }
-
-    (0 , 0)
-
-}
+use bridge::{config::Config, packet::Packet};
 
 fn handle_client(mut stream: TcpStream) {
 
-        let (packet_type , payload_size) = read_parse_header(&mut stream);
-        const MAXIMUM_BUFFER_SIZE: usize = std::u16::MAX as usize;
+        // std::u16::MAX as usize
+        const MAXIMUM_BUFFER_SIZE: usize = 30;
         let mut buffer = [0u8;MAXIMUM_BUFFER_SIZE];
+        let mut cursor = -1i32;
 
-        let mut start = 3;
-    
+        loop {
 
-        while let Ok(bytes_read) = stream.read(&mut buffer[start..payload_size+3 as usize]) {
-            if bytes_read == 0 {
-                println!("bytes read are 0");
-                continue;
+            if let Ok(bytes_read) = stream.read(&mut buffer[0..3]) {
+
+                if bytes_read == 0 {
+                    return;
+                }
+
+                cursor += bytes_read as i32;
+
+            } else {return};
+
+            let (packet_type , payload_size) = Packet::parse_header(&buffer[0..3]).unwrap();
+            let mut total_bytes_read: usize = 0;
+
+            let buffer_slice = &mut buffer[(cursor as usize)..payload_size+(cursor as usize)];
+
+            while let Ok(bytes_read) = stream.read(buffer_slice) {
+
+                if bytes_read == 0 {
+                    return;
+                }
+
+                cursor += bytes_read as i32;
+                total_bytes_read += bytes_read;
+
+                if total_bytes_read < payload_size as usize {continue}
+
+                break;
+
             }
-            if bytes_read < payload_size {
-                start += bytes_read;
-                continue;
-            } 
-            println!("number of bytes read = {bytes_read} , payload size = {payload_size}");
-            break;
-        }
 
-        println!("reached here");
+            println!("{:?}" , buffer);
 
-        let packet = 
-        Packet::deserilize_fro_utf8(packet_type , &buffer[start..payload_size+3] , None);
+            let packet = 
+            Packet::deserilize_from_utf8(
+                packet_type, 
+                &buffer[2..(payload_size as usize)+2],
+                None);
 
-        println!("{:?}" , packet);
+            println!("{:?}" , packet);
 
-        if let Ok(bytes_written) = stream.write(&packet.serialize()) {
-            println!("{bytes_written} bytes written");
+            if let Ok(bytes_written) = stream.write(&packet.serialize()) {
+                println!("{bytes_written} bytes written");
+            }
+
+            cursor = -1;
+
         }
 
 }

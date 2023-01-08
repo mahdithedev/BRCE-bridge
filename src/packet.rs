@@ -1,5 +1,4 @@
-use crate::error::{NetworkErrorCode, NeErCode};
-
+use crate::error;
 
     #[derive(PartialEq , Eq , Clone , Debug)]
     pub enum Packet {
@@ -10,7 +9,7 @@ use crate::error::{NetworkErrorCode, NeErCode};
         LIS(String),
         INP(String),
         OUT(String),
-        ERR(NetworkErrorCode),
+        ERR(error::NetworkErrorCode),
         Unknown(u8),
     }
 
@@ -70,7 +69,7 @@ use crate::error::{NetworkErrorCode, NeErCode};
             }
         }
 
-        pub fn deserilize(packet_type: u8 , payload: String , err: Option<NeErCode>) -> Packet {
+        pub fn deserilize(packet_type: u8 , payload: String , err: Option<error::NeErCode>) -> Packet {
             match packet_type {
                 0 => Packet::PROF(String::from(payload)),
                 1 => Packet::INIT(String::from(payload)),
@@ -83,10 +82,10 @@ use crate::error::{NetworkErrorCode, NeErCode};
             }
         }
 
-        pub fn deserilize_fro_utf8(
+        pub fn deserilize_from_utf8(
             packet_type: u8,
             payload: &[u8], 
-            err: Option<NeErCode>) -> Packet {
+            err: Option<error::NeErCode>) -> Packet {
 
             let payload = String::from_utf8(payload.to_vec()).unwrap();
 
@@ -100,6 +99,22 @@ use crate::error::{NetworkErrorCode, NeErCode};
                 6 => Packet::ERR(err.unwrap()),
                 v => Packet::Unknown(v)
             }
+        }
+
+        
+        pub fn parse_header(buffer: &[u8]) -> Result<(u8 , usize) , error::ApplicationError> {
+
+            if buffer.len() < 3 {
+                return Err(error::ApplicationError(error::ApErCode::BYTESNOTENOUGH));
+            }
+
+            let packet_type = buffer[0];
+            let payload_size = &buffer[1..3];
+
+            let payload_size: u16 = (payload_size[0] | payload_size[1]<<7) as u16;
+
+            Ok((packet_type , payload_size as usize))
+            
         }
 
     }
@@ -140,8 +155,8 @@ mod tests {
         Packet::INP(String::from("ls -l")) );
 
         assert_eq!(Packet::deserilize(6, String::from("") , 
-        Some(NetworkErrorCode::AccessDenied)),
-        Packet::ERR(NetworkErrorCode::AccessDenied))
+        Some(error::NetworkErrorCode::AccessDenied)),
+        Packet::ERR(error::NetworkErrorCode::AccessDenied))
 
     } 
 
