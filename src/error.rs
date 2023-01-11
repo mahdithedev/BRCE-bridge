@@ -1,6 +1,8 @@
 
 use core::fmt;
 
+// protocol defined errors see https://github.com/mahdithedev/BRCE-specification#errors for more 
+// information
 #[derive(PartialEq , Eq , Copy, Clone , Debug)]
 pub enum NetworkErrorCode {
     TargetOffline,
@@ -55,6 +57,7 @@ impl fmt::Display for NetworkError {
     }   
 }
 
+// errors returned by functions in the library 
 #[derive(Eq , PartialEq , Clone , Debug)]
 pub enum ApplicationErrorCode {
 BYTESNOTENOUGH,
