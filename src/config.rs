@@ -15,6 +15,17 @@ pub struct Config {
     pub protocol_version: String,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            storage_file:"profiles.json".to_string(),
+            key:"key".to_string(),
+            protocol_version:"latest".to_string(),
+            white_list: None , black_list: None, 
+        }
+    }
+}
+
 impl Config {
 
     pub fn new(storage_file: &str, key: &str, protocol_version: &str ) -> Config {
@@ -23,16 +34,6 @@ impl Config {
             key: key.to_string(),
             protocol_version: protocol_version.to_string(),
             white_list: None , black_list: None
-        }
-    }
-
-    // creates a defualt configuration
-    pub fn defualt() -> Config {
-        Config {
-            storage_file:"profiles.json".to_string(),
-            key:"key".to_string(),
-            protocol_version:"latest".to_string(),
-            white_list: None , black_list: None, 
         }
     }
 
@@ -114,7 +115,7 @@ mod tests {
     #[test]
     fn ip_cant_be_in_both_lists() {
         
-        let mut c = Config::defualt();
+        let mut c = Config::default();
         let ip = String::from("127.0.0.1");
 
         c.add_ip_to_whitelist(&ip).unwrap();
@@ -128,7 +129,7 @@ mod tests {
     #[test]
     fn blacklisted_ip_not_allowed() {
 
-        let mut c = Config::defualt();
+        let mut c: Config = Config::default();
         let ip = String::from("127.0.0.1");
 
         c.add_ip_to_blacklist(&ip).unwrap();
@@ -140,7 +141,7 @@ mod tests {
     #[test]
     fn ip_not_in_whitelist_not_allowed() {
 
-        let mut c = Config::defualt();
+        let mut c = Config::default();
         let ip1 = String::from("127.0.0.1");
         let ip2 = String::from("197.8.2.3");
 

@@ -61,12 +61,14 @@ impl fmt::Display for NetworkError {
 #[derive(Eq , PartialEq , Clone , Debug)]
 pub enum ApplicationErrorCode {
 BYTESNOTENOUGH,
+COMMUNACATIONCLOSED
 }
 
 impl From<ApplicationErrorCode> for u8 {
     fn from(error_code: ApplicationErrorCode) -> Self {
         match error_code {
             ApplicationErrorCode::BYTESNOTENOUGH => 0,
+            ApplicationErrorCode::COMMUNACATIONCLOSED => 1,
         }
     }
 }
@@ -83,7 +85,8 @@ impl From<u8> for ApplicationErrorCode {
 impl fmt::Display for ApplicationErrorCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ApplicationErrorCode::BYTESNOTENOUGH => write!(f , "bytes not enough")
+            ApplicationErrorCode::BYTESNOTENOUGH => write!(f , "bytes not enough"),
+            Self::COMMUNACATIONCLOSED => write!(f , "communacation closed by writing 0 bytes")
         }
     }
 }
