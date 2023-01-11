@@ -48,24 +48,36 @@ fn get_packet(mut stream: &net::TcpStream) -> Result<Packet , error::Application
 fn handle_client(mut stream: net::TcpStream) {
 
     let config = Config::default();
-    let storage = profile::Storage::parse_file(config.storage_file);
+    let mut storage = profile::Storage::parse_file(&config.storage_file);
 
     loop {
 
         let packet = match get_packet(&stream) {
             Ok(v) => v,
-            Err(_) => continue,
+            Err(_) => {
+                stream.flush().unwrap();
+                return;
+            },
         };
 
         let response = match packet {
             Packet::LIS(v) => {
-                Packet::LIS(storage.match_pattern(v))
+                let matches = storage.match_pattern(v); 
+                Packet::LIS(matches.to_string())
+            },
+            Packet::PROF(prof) => {
+                let prof: profile::Profile = serde_json::from_str(&prof).unwrap(); 
+                storage.push(prof);
+                storage.save(&config.storage_file);
+                Packet::ACK()
             },
             _ => Packet::ACK()
         };
 
-        if let Ok(bytes_written) = stream.write(&response.serialize()) {
-            println!("{bytes_written} bytes written");
+        if let Ok(_bytes_written) = stream.write(&response.serialize()) {
+            continue;
+        } else {
+            return;
         }
 
     }

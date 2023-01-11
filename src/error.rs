@@ -1,5 +1,5 @@
 
-use core::fmt;
+use core::{fmt, panic};
 
 // protocol defined errors see https://github.com/mahdithedev/BRCE-specification#errors for more 
 // information
@@ -61,7 +61,8 @@ impl fmt::Display for NetworkError {
 #[derive(Eq , PartialEq , Clone , Debug)]
 pub enum ApplicationErrorCode {
 BYTESNOTENOUGH,
-COMMUNACATIONCLOSED
+COMMUNACATIONCLOSED,
+ZEROBYTESREAD,
 }
 
 impl From<ApplicationErrorCode> for u8 {
@@ -69,6 +70,7 @@ impl From<ApplicationErrorCode> for u8 {
         match error_code {
             ApplicationErrorCode::BYTESNOTENOUGH => 0,
             ApplicationErrorCode::COMMUNACATIONCLOSED => 1,
+            _ => panic!("now its time to handle this")
         }
     }
 }
@@ -86,7 +88,8 @@ impl fmt::Display for ApplicationErrorCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ApplicationErrorCode::BYTESNOTENOUGH => write!(f , "bytes not enough"),
-            Self::COMMUNACATIONCLOSED => write!(f , "communacation closed by writing 0 bytes")
+            Self::COMMUNACATIONCLOSED => write!(f , "communacation closed by writing 0 bytes"),
+            _ => panic!("time to handle this quick")
         }
     }
 }

@@ -123,7 +123,7 @@ impl Packet {
         let packet_type = buffer[0];
         let payload_size = &buffer[1..3];
 
-        let payload_size: u16 = (payload_size[0] | payload_size[1]<<7) as u16;
+        let payload_size: u16 = payload_size[0] as u16 | (payload_size[1] as u16) << 8;
 
         Ok((packet_type , payload_size as usize))
         
